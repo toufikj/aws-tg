@@ -4,7 +4,7 @@ include "root" {
 }
 
 include "stage" {
-  path   = find_in_parent_folders("stage.hcl")
+  path   = find_in_parent_folders("prod.hcl")
   expose = true
 }
 
