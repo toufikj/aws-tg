@@ -55,5 +55,5 @@ inputs = {
 
 terraform {
 
-  source = "${get_parent_terragrunt_dir("root")}../../../../modules/aws/vpc_v2"
+  source = "${get_parent_terragrunt_dir("root")}/../../../../modules/aws/vpc_v2"
 }
