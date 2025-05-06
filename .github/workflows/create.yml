@@ -81,8 +81,8 @@ jobs:
         id: aws_creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            aws-access-key-id: ${{ secrets[format('{0}_AWS_ACCESS_KEY_ID', inputs.brand_name)] }}
-            aws-secret-access-key: ${{ secrets[format('{0}_AWS_SECRET_ACCESS_KEY', inputs.brand_name)] }}
+            aws-access-key-id: ${{ secrets[format('{0}_ACCESS_KEY_ID', inputs.brand_name)] }}
+            aws-secret-access-key: ${{ secrets[format('{0}_SECRET_ACCESS_KEY', inputs.brand_name)] }}
             aws-region: ap-south-1
 
       - name: Set tg path and install checkov
