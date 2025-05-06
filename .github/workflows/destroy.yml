@@ -1,0 +1,89 @@
+name: "destroy infrastructure"
+
+on:
+  workflow_dispatch:
+    inputs:
+      brand_name:
+        type: choice
+        description: "Select the brand name"
+        options:
+          - AWS
+      environment_name:
+        type: choice
+        description: "Select the environment name"
+        options:
+          - prod
+      resource:
+        type: choice
+        description: "Select the resources name"
+        options:
+          - vpc
+          - ecr
+          - strapi
+          - strapi-ecs
+          - ecs-nextjs
+      tf_function:
+        type: choice
+        description: "infrastructure planning / deployment"
+        options:
+          - plan
+          - destroy
+  # push:
+  #   branches:
+  #     - feature/monitoring-alerts
+
+
+env:
+  TERRAFORM_VERSION: 1.8.5
+  TERRAGRUNT_VERSION: v0.59.4
+
+jobs:
+  terragrunt-destroy-production:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set resource_env based on selected brand
+        id: set-env
+        run: |
+          case "${{ inputs.brand_name }}" in
+            "AWS")
+              echo "resource_env=aws" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "resource_env=unknown" >> $GITHUB_ENV
+              ;;
+          esac
+
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set the Terragrunt folder path
+        id: set-folder
+        run: |
+          echo "tg_dir=terragrunt/${{ env.resource_env }}/${{ inputs.environment_name }}/${{ inputs.resource }}" >> $GITHUB_ENV
+
+      - name: Terraform Plan
+        # if: inputs.tf_function == 'plan'
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.TERRAFORM_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: ${{ env.tg_dir }}
+          tg_command: 'plan'
+        id: terraform-plan
+      
+      - name: Deploy
+        # if: inputs.tf_function == 'apply' && github.ref == 'refs/heads/main' && inputs.environment_name == 'prod'
+        if: inputs.tf_function == 'destroy'
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.TERRAFORM_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: ${{ env.tg_dir }} # terragrunt/${{ env.resource_env }}_terragrunt/${{ env.resource_env }}/${{ inputs.environment_name }}/${{ inputs.resource }}
+          tg_command: 'destroy'
