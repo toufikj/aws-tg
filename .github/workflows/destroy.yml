@@ -58,10 +58,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Configure AWS Credentials
+        id: aws_creds
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+            aws-access-key-id: ${{ secrets[format('{0}_AWS_ACCESS_KEY_ID', inputs.brand_name)] }}
+            aws-secret-access-key: ${{ secrets[format('{0}_AWS_SECRET_ACCESS_KEY', inputs.brand_name)] }}
+            aws-region: ap-south-1
 
       - name: Set the Terragrunt folder path
         id: set-folder
