@@ -18,14 +18,8 @@ on:
         description: "Select the resources name"
         options:
           - vpc
-          - cloud-run
-          - cloud-sql
-          - monitoring
-          - storage
-          - run-nextjs
+          - ecs-metabase
           - nextjs-alb
-          - artifact-nextjs
-          - mem-store
       tf_function:
         type: choice
         description: "infrastructure planning / deployment"

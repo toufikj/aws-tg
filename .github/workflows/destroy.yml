@@ -19,9 +19,8 @@ on:
         options:
           - vpc
           - ecr
-          - strapi
-          - strapi-ecs
-          - ecs-nextjs
+          - ecs-metabase
+          - nextjs-alb
       tf_function:
         type: choice
         description: "infrastructure planning / deployment"
