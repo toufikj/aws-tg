@@ -63,7 +63,7 @@ inputs = {
   domain                = "metabase.toufik.online"
   cpu                   = "1024"
   memory                = "2048"
-  container_image_uri       = "metabase/metabase"
+  container_image_uri       = "metabase/metabase:latest"
   environment_variables = {
     SERViCE = "metabase"
   }
