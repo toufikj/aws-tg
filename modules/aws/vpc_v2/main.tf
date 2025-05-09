@@ -11,6 +11,7 @@ module "vpc_subnet_module" {
 
   enable_ipv6          = var.vpc_subnet_module.enable_ipv6
   enable_nat_gateway   = var.vpc_subnet_module.enable_nat_gateway
+  single_nat_gateway   = var.vpc_subnet_module.single_nat_gateway
   enable_vpn_gateway   = var.vpc_subnet_module.enable_vpn_gateway
   enable_dns_hostnames = var.vpc_subnet_module.enable_dns_hostnames
   enable_dns_support   = var.vpc_subnet_module.enable_dns_support
