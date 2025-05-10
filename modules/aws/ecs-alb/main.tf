@@ -2,7 +2,7 @@ resource "aws_lb" "ecs_alb" {
   name               = "${var.env}-${var.product}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = var.alb_sg
+  security_groups    = [var.alb_sg]
   subnets            = var.private_subnets
 }
 
