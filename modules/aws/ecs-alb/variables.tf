@@ -7,7 +7,7 @@ variable "product" {
 }
 
 variable "alb_sg" {
-  type        = string
+  type        = list(string)
 }
 
 variable "private_subnets" {
