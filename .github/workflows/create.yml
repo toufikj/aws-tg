@@ -19,7 +19,7 @@ on:
         options:
           - vpc
           - ecs-metabase
-          - nextjs-alb
+          - alb-metabase
       tf_function:
         type: choice
         description: "infrastructure planning / deployment"
