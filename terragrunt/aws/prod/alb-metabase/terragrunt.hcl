@@ -47,7 +47,7 @@ inputs = {
   product              = "metabase"
   
   private_subnets     = dependency.vpc.outputs.vpc_public_subnets_ids
-  alb_sg              = "sg-0fded28c698264956"
+  alb_sg              = ["sg-0fded28c698264956"]
   
   ssl_certificate_arn = "arn:aws:acm:ap-south-1:783764579443:certificate/12ebb5ea-86be-4988-8947-891dd0316625"
   
