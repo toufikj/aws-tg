@@ -68,10 +68,10 @@ inputs = {
     SERViCE = "metabase"
   }
   desired_count         = 1
-  existing_load_balancer_arn = "arn:aws:elasticloadbalancing:ap-south-1:783764579443:loadbalancer/app/metabase-lb/f423fe3ee886fa36"
+  existing_load_balancer_arn = dependency.loadbalancer.outputs.alb_arn
   private_subnets       = dependency.vpc.outputs.vpc_private_subnets_ids
   security_group        = "sg-0fded28c698264956"
-  existing_listener_arn = "arn:aws:elasticloadbalancing:ap-south-1:783764579443:listener/app/metabase-lb/f423fe3ee886fa36/11b981557bb8dbac"
+  existing_listener_arn = dependency.loadbalancer.outputs.alb_http_listener
   existing_ecs_task_execution_role_arn = "arn:aws:iam::783764579443:role/ecsTaskExecutionRole"
   ssl_certificate_arn = "arn:aws:acm:ap-south-1:783764579443:certificate/12ebb5ea-86be-4988-8947-891dd0316625"
   listener_priority     = 5  # Listener priority
@@ -83,6 +83,14 @@ dependency "vpc" {
     vpc_private_subnets_ids = ["subnet-09d937d08b4abc98b", "subnet-08dbd9a33cf4ac5c9", "subnet-06e93c4dbff5f1934"]
   }
 } 
+dependency "loadbalancer" {
+  config_path = "../alb-metabase"
+  mock_outputs = {
+    alb_arn = "arn:aws:elasticloadbalancing:ap-south-1:783764579443:loadbalancer/app/metabase-lb/f423fe3ee886fa36"
+    alb_http_listener = "arn:aws:elasticloadbalancing:ap-south-1:783764579443:listener/app/metabase-lb/f423fe3ee886fa36/11b981557bb8dbac"
+
+  }
+}  
 
 terraform {
   source = "${get_parent_terragrunt_dir("root")}}/../modules/aws/ecs_v3"  # Correct relative path to the Strapi module
