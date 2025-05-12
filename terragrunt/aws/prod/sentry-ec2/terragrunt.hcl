@@ -38,8 +38,6 @@ provider "aws" {
 EOF
 }
 
-
-
 ########################
 inputs = {
   ami_id                      = "ami-0f58b397bc5c1f2e8"
@@ -47,25 +45,24 @@ inputs = {
   key_name                    = "ac799"
   subnet_id                   = "subnet-0a8f45edcb26833cb"
   instance_name               = "sentry"
-  environment                 = "prod"
-  organization                = "toufik"
-  service                     = "sentry"
   vpc_id                      = "vpc-08537c3ca047ee074"
-  subnet_type                = "application"
-  instance_count              = 1
-  associate_public_ip_address = true
-  create_tg                   = true
-  host_based_routing_rule     = true
-  traffic_port                = 9000
-  tg_protocol                 = "HTTP"
-  tg_target_type              = "instance"
-  tg_listener_arn             = "arn:aws:elasticloadbalancing:ap-south-1:783764579443:listener/app/sentry-lb/c2c21d4bb50c8407/261cfe406af6359c"
-  tg_rule_priority            = 40
-  host_headers                = ["sentry.toufik.online"]
-  path                        = "/api/v1"
+  volume_size                 = 30
+  allowed_cidr_blocks         = ["0.0.0.0/0"]
+  
+  # Target group configuration
+  create_target_group         = true
+  target_group_port           = 9000
+  target_group_protocol       = "HTTP"
+  health_check_path           = "/"
+  health_check_interval       = 30
+  health_check_timeout        = 5
+  healthy_threshold           = 3
   unhealthy_threshold         = 10
-  lb_arn_suffix               = "app/sentry-lb/c2c21d4bb50c8407"
-  }
+  health_check_matcher        = "200-399"
+  
+  # Tags
+  tags                        = local.tags
+}
 
 terraform {
   source = "${get_parent_terragrunt_dir("root")}/../modules/aws/sentry-instance"

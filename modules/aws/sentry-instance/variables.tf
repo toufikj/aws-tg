@@ -1,68 +1,115 @@
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
+  type        = string
 }
 
 variable "instance_type" {
-  description = "Instance type for the EC2 instance"
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
 }
 
 variable "key_name" {
-  description = "SSH key pair name for accessing the EC2 instance"
+  description = "SSH key name for the EC2 instance"
+  type        = string
 }
 
 variable "subnet_id" {
-  description = "Subnet ID for the EC2 instance"
+  description = "Subnet ID where the EC2 instance will be launched"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID where resources will be created"
+  type        = string
 }
 
 variable "instance_name" {
-  description = "Name tag for the EC2 instance"
+  description = "Name for the EC2 instance"
+  type        = string
 }
 
-variable "allowed_ssh_cidr_blocks" {
-  description = "CIDR blocks allowed for SSH access"
+variable "volume_size" {
+  description = "Size of the root volume in GB"
+  type        = number
+  default     = 20
+}
+
+variable "allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access the instance"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
 
-
-variable "vpc_id" {
-  description = "Name tag for the vpc instance"
+variable "tags" {
+  description = "Tags to apply to all resources"
+  type        = map(string)
+  default     = {}
 }
 
-
-
-###########################will be edited out ##################
-### common variables
-variable "environment" {
-  description = "The name of environment"
+# Target Group Variables
+variable "create_target_group" {
+  description = "Whether to create a target group"
+  type        = bool
+  default     = true
 }
 
-variable "service" {
-  description = "The name of service"
+variable "target_group_port" {
+  description = "Port for the target group"
+  type        = number
+  default     = 80
 }
 
-variable "organization" {
-  description = "The name of organization"
+variable "target_group_protocol" {
+  description = "Protocol for the target group"
+  type        = string
+  default     = "HTTP"
 }
 
-
-## ec2 vars
-variable "subnet_type" {}
-variable "instance_count" {}
-variable "associate_public_ip_address" {}
-
-### tg & listener rule variables
-variable "create_tg" {}
-variable "host_based_routing_rule" {}
-variable "traffic_port" {}
-variable "tg_protocol" {}
-variable "tg_target_type" {}
-variable "tg_listener_arn" {}
-variable "tg_rule_priority" {}
-
-variable "host_headers" {
-  type = list(string)
+variable "health_check_interval" {
+  description = "Health check interval in seconds"
+  type        = number
+  default     = 30
 }
-variable "path" {}
-variable "unhealthy_threshold" {}
-variable "lb_arn_suffix" {}
+
+variable "health_check_path" {
+  description = "Health check path"
+  type        = string
+  default     = "/"
+}
+
+variable "health_check_port" {
+  description = "Health check port"
+  type        = string
+  default     = "traffic-port"
+}
+
+variable "health_check_protocol" {
+  description = "Health check protocol"
+  type        = string
+  default     = "HTTP"
+}
+
+variable "health_check_timeout" {
+  description = "Health check timeout in seconds"
+  type        = number
+  default     = 5
+}
+
+variable "healthy_threshold" {
+  description = "Number of consecutive health check successes required"
+  type        = number
+  default     = 3
+}
+
+variable "unhealthy_threshold" {
+  description = "Number of consecutive health check failures required"
+  type        = number
+  default     = 3
+}
+
+variable "health_check_matcher" {
+  description = "Response codes to use when checking for a healthy response"
+  type        = string
+  default     = "200-399"
+}
