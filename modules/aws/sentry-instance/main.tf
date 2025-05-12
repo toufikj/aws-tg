@@ -5,7 +5,7 @@ resource "aws_instance" "ec2" {
   security_groups        = [aws_security_group.sentry_sg.id]
   subnet_id              = var.subnet_id
   associate_public_ip_address = true
-  iam_instance_profile   = module.ec2_role.instance_profile_name
+  iam_instance_profile   = module.ec2_role.name
 
   root_block_device {
     volume_size = 20  # Specify the size of the root volume in GB
