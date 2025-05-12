@@ -1,6 +1,6 @@
 module "ec2_role" {
 #   source              = "../../../../modules/aws/ec2-iam-role"
-  source              = "./../ec2-iam-role//"
+  source              = "./../ec2-iam-role/"
   environment         = var.environment
   organization        = var.organization
   service             = var.service
