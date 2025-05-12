@@ -20,6 +20,9 @@ resource "aws_lb_listener" "alb_http_listener" {
       status_code  = "200"
     }
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Create Listener on Port 443 (HTTPS)
@@ -38,6 +41,9 @@ resource "aws_lb_listener" "https_listener" {
       message_body = "HTTPS listener created, no target group yet"
       status_code  = "200"
     }
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
