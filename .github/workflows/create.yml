@@ -18,8 +18,10 @@ on:
         description: "Select the resources name"
         options:
           - vpc
+          - ecr
           - ecs-metabase
           - alb-metabase
+          - sentry-ec2
       tf_function:
         type: choice
         description: "infrastructure planning / deployment"

@@ -21,6 +21,7 @@ on:
           - ecr
           - ecs-metabase
           - alb-metabase
+          - sentry-ec2
       tf_function:
         type: choice
         description: "infrastructure planning / deployment"
