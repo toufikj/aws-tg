@@ -19,15 +19,6 @@ resource "aws_instance" "ec2" {
   )
 }
 
-module "ec2_iam_role" {
-  source = "../ec2-iam-role"
-  
-  role_name   = "${var.instance_name}-role"
-  policy_name = "${var.instance_name}-policy"
-  
-  # Pass any additional variables required by the module
-  tags        = var.tags
-}
 
 resource "aws_security_group" "sg" {
   name        = "${var.instance_name}-sg"
