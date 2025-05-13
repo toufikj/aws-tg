@@ -1,18 +1,5 @@
-variable "environment" {
-  type        = string
-  default     = "prod"
-}
-
-variable "organization" {
-  description = "Organization name"
-  type        = string
-  default     = "default"
-}
-
-variable "service" {
-  description = "Service name"
-  type        = string
-  default     = "ec2"
+variable "iam_instance_profile" {
+  type = string
 }
 
 variable "ami_id" {

@@ -40,9 +40,6 @@ EOF
 
 ########################
 inputs = {
-  environment                 = "prod"
-  organization                = "toufik"
-  service                     = "sentry"
   ami_id                      = "ami-0f58b397bc5c1f2e8"
   instance_type               = "t3.medium"
   key_name                    = "ac799"
@@ -51,6 +48,7 @@ inputs = {
   vpc_id                      = "vpc-08537c3ca047ee074"
   volume_size                 = 10
   allowed_cidr_blocks         = ["0.0.0.0/0"]
+  iam_instance_profile        = dependency.iam_role.outputs.instance_profile_name
   
   # Target group configuration
   create_target_group         = true
@@ -66,6 +64,10 @@ inputs = {
   # Tags
   tags                        = local.tags
 }
+dependency "iam_role" {
+  config_path = "../ec2-iam-role"
+}
+
 
 terraform {
   source = "${get_parent_terragrunt_dir("root")}/../modules/aws/ec2"

@@ -22,6 +22,7 @@ on:
           - ecs-metabase
           - alb-metabase
           - sentry-ec2
+          - ssm-iam-role
       tf_function:
         type: choice
         description: "infrastructure planning / deployment"

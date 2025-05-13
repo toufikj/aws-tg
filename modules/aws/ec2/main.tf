@@ -5,7 +5,7 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids      = [aws_security_group.sg.id]
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
-  iam_instance_profile   = module.ec2_role.role_name
+  iam_instance_profile   = var.iam_instance_profile
   
   root_block_device {
     volume_size = var.volume_size
