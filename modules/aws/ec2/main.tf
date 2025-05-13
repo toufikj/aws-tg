@@ -5,6 +5,7 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids      = [aws_security_group.sg.id]
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
+  iam_instance_profile   = module.ec2_role.role_name
   
   root_block_device {
     volume_size = var.volume_size
@@ -16,6 +17,16 @@ resource "aws_instance" "ec2" {
     },
     var.tags
   )
+}
+
+module "ec2_iam_role" {
+  source = "../ec2-iam-role"
+  
+  role_name   = "${var.instance_name}-role"
+  policy_name = "${var.instance_name}-policy"
+  
+  # Pass any additional variables required by the module
+  tags        = var.tags
 }
 
 resource "aws_security_group" "sg" {

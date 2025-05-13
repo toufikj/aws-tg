@@ -46,7 +46,7 @@ inputs = {
   subnet_id                   = "subnet-0a8f45edcb26833cb"
   instance_name               = "sentry"
   vpc_id                      = "vpc-08537c3ca047ee074"
-  volume_size                 = 30
+  volume_size                 = 10
   allowed_cidr_blocks         = ["0.0.0.0/0"]
   
   # Target group configuration
@@ -65,5 +65,5 @@ inputs = {
 }
 
 terraform {
-  source = "${get_parent_terragrunt_dir("root")}/../modules/aws/sentry-instance"
+  source = "${get_parent_terragrunt_dir("root")}/../modules/aws/ec2"
 }
