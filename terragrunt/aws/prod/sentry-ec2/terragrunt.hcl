@@ -65,7 +65,7 @@ inputs = {
   tags                        = local.tags
 }
 dependency "iam_role" {
-  config_path = "../ec2-iam-role"
+  config_path = "../ssm-iam-role"
 }
 
 
