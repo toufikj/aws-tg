@@ -1,3 +1,20 @@
+variable "environment" {
+  type        = string
+  default     = "prod"
+}
+
+variable "organization" {
+  description = "Organization name"
+  type        = string
+  default     = "default"
+}
+
+variable "service" {
+  description = "Service name"
+  type        = string
+  default     = "ec2"
+}
+
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
   type        = string

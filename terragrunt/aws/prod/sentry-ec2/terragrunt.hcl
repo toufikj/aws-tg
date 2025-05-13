@@ -40,6 +40,9 @@ EOF
 
 ########################
 inputs = {
+  environment                 = "prod"
+  organization                = "toufik"
+  service                     = "sentry"
   ami_id                      = "ami-0f58b397bc5c1f2e8"
   instance_type               = "t3.medium"
   key_name                    = "ac799"
