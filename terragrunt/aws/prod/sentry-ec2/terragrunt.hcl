@@ -42,7 +42,7 @@ EOF
 inputs = {
   ami_id                      = "ami-0f58b397bc5c1f2e8"
   instance_type               = "t3.medium"
-  key_name                    = "ac799"
+  key_name                    = "account799"
   subnet_id                   = "subnet-0a8f45edcb26833cb"
   instance_name               = "sentry"
   vpc_id                      = "vpc-08537c3ca047ee074"
