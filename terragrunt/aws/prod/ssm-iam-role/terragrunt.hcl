@@ -39,7 +39,7 @@ EOF
 }
 
 terraform {
-  source = "${get_parent_terragrunt_dir("root")}/../modules/aws/ec2"
+  source = "${get_parent_terragrunt_dir("root")}/../modules/aws/ec2-iam-role"
 }
 
 inputs = {
