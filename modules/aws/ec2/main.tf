@@ -15,7 +15,7 @@ resource "aws_instance" "ec2" {
     set -e
     # Install Java
     sudo apt-get update -y
-    sudo apt install openjdk-11-jre-headless -y
+    sudo apt install openjdk-11-jre-headless unzip -y
     git clone https://github.com/toufikj/login-deploy.git
     # Download and install Apache Tomcat 9
     wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.zip 
