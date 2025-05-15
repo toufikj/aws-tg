@@ -20,7 +20,7 @@ resource "aws_instance" "ec2" {
     # Download and install Apache Tomcat 9
     wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.zip 
     unzip apache-tomcat-10.1.41.zip 
-    mv apache-tomcat-10.1.41.zip  /opt/
+    mv apache-tomcat-10.1.41  /opt/
 
     # Make startup scripts executable
     chmod +x /opt/apache-tomcat-10.1.41/bin/*.sh
