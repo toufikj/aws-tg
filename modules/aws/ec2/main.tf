@@ -10,6 +10,14 @@ resource "aws_instance" "ec2" {
   root_block_device {
     volume_size = var.volume_size
   }
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    # Install Java
+    sudo apt-get update -y
+    sudo apt install openjdk-11-jre-headless -y
+    git clone https://github.com/toufikj/login-deploy.git
+  EOF
+  )
 
   tags = merge(
     {
