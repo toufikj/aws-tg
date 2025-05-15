@@ -18,18 +18,18 @@ resource "aws_instance" "ec2" {
     sudo apt install openjdk-11-jre-headless -y
     git clone https://github.com/toufikj/login-deploy.git
     # Download and install Apache Tomcat 9
-    wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz -P /tmp
-    tar -xzf /tmp/apache-tomcat-9.0.85.tar.gz -C /opt/
-    mv /opt/apache-tomcat-9.0.85 /opt/tomcat
+    wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.zip 
+    unzip apache-tomcat-10.1.41.zip 
+    mv apache-tomcat-10.1.41.zip  /opt/
 
     # Make startup scripts executable
-    chmod +x /opt/tomcat/bin/*.sh
+    chmod +x /opt/apache-tomcat-10.1.41/bin/*.sh
     # Change Tomcat's default port from 8080 to 80
-    sed -i 's/port="8080"/port="80"/' /opt/tomcat/conf/server.xml
+    sed -i 's/port="8080"/port="80"/' /opt/apache-tomcat-10.1.41/conf/server.xml
 
-    cp /login-deploy/LoginWebApp.war /opt/tomcat/webapps/
+    cp /login-deploy/LoginWebApp.war /opt/apache-tomcat-10.1.41/webapps/
     # Start Tomcat
-    /opt/tomcat/bin/startup.sh
+    /opt/apache-tomcat-10.1.41/bin/startup.sh
   EOF
   )
 
