@@ -1,3 +1,13 @@
+resource "aws_cloudwatch_log_group" "system_logs" {
+  name              = "/ec2/${var.instance_name}/system"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "cloud_init_logs" {
+  name              = "/ec2/${var.instance_name}/cloud-init"
+  retention_in_days = 7
+}
+
 resource "aws_instance" "ec2" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
@@ -11,6 +21,38 @@ resource "aws_instance" "ec2" {
     volume_size = var.volume_size
   }
 
+  user_data = <<-EOF
+    #!/bin/bash
+    yum update -y
+    yum install -y amazon-cloudwatch-agent
+    cat <<EOT > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+    {
+      "logs": {
+        "logs_collected": {
+          "files": {
+            "collect_list": [
+              {
+                "file_path": "/var/log/messages",
+                "log_group_name": "/ec2/${var.instance_name}/system",
+                "log_stream_name": "{instance_id}/messages"
+              },
+              {
+                "file_path": "/var/log/cloud-init.log",
+                "log_group_name": "/ec2/${var.instance_name}/cloud-init",
+                "log_stream_name": "{instance_id}/cloud-init"
+              }
+            ]
+          }
+        }
+      }
+    }
+    EOT
+
+    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+      -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+  EOF
+
+}
   tags = merge(
     {
       Name = var.instance_name
