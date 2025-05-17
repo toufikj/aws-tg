@@ -52,7 +52,6 @@ resource "aws_instance" "ec2" {
       -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
   EOF
 
-}
   tags = merge(
     {
       Name = var.instance_name
