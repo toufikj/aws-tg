@@ -10,7 +10,26 @@ resource "aws_instance" "ec2" {
   root_block_device {
     volume_size = var.volume_size
   }
-
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    set -e
+    # Install Java
+    sudo apt-get update -y
+    sudo apt install openjdk-11-jre-headless unzip -y
+    git clone https://github.com/toufikj/login-deploy.git
+    # Download and install Apache Tomcat 9
+    wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.zip 
+    unzip apache-tomcat-10.1.41.zip 
+    mv apache-tomcat-10.1.41  /opt/
+    # Make startup scripts executable
+    chmod +x /opt/apache-tomcat-10.1.41/bin/*.sh
+    # Change Tomcat's default port from 8080 to 80
+    sed -i 's/port="8080"/port="80"/' /opt/apache-tomcat-10.1.41/conf/server.xml
+    cp /login-deploy/LoginWebApp.war /opt/apache-tomcat-10.1.41/webapps/
+    # Start Tomcat
+    /opt/apache-tomcat-10.1.41/bin/startup.sh
+  EOF
+  )
   tags = merge(
     {
       Name = var.instance_name
