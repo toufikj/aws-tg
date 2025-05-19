@@ -1,0 +1,92 @@
+name: "Create Infrastructure Branch Based Deployment"
+
+on:
+  workflow_dispatch:
+    inputs:
+      brand_name:
+        type: choice
+        description: "Select the brand name"
+        options:
+          - AWS
+      environment_name:
+        type: choice
+        description: "Select the environment name"
+        options:
+          - prod
+      resource:
+        type: choice
+        description: "Select the resources name"
+        options:
+          - ec2-instance
+          - ssm-iam-role
+      tf_function:
+        type: choice
+        description: "infrastructure planning / deployment"
+        options:
+          - plan
+          - apply
+
+env:
+  TERRAFORM_VERSION: 1.8.5
+  TERRAGRUNT_VERSION: v0.59.4
+jobs:
+  terragrunt-apply:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set resource_env based on selected brand
+        id: set-env
+        run: |
+          case "${{ inputs.brand_name }}" in
+            "AWS")
+              echo "resource_env=aws" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "resource_env=unknown" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        id: aws_creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-access-key-id: ${{ secrets[format('{0}_ACCESS_KEY_ID', inputs.brand_name)] }}
+            aws-secret-access-key: ${{ secrets[format('{0}_SECRET_ACCESS_KEY', inputs.brand_name)] }}
+            aws-region: ap-south-1
+
+      - name: Set tg path and install checkov
+        id: set-folder
+        run: |
+          echo "tg_dir=terragrunt/${{ env.resource_env }}/${{ inputs.environment_name }}/${{ inputs.resource }}" >> $GITHUB_ENV
+
+      - name: Terraform Plan
+        # if: inputs.tf_function == 'plan'
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.TERRAFORM_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: ${{ env.tg_dir }}
+          tg_command: 'plan -out=tfplan.binary'
+        id: terraform-plan
+
+      - name: Find Terraform Plan 
+        run: |
+          sudo find ${{github.workspace}} -type f -name "plan.json"
+          TFPLAN_PATH=$(sudo find ${{github.workspace}} -type f -name "plan.json" | head -n 1) >> $GITHUB_ENV
+          ls  -ltra ${{env.TFPLAN_PATH}} 
+          DIR_PATH=$(dirname "$TFPLAN_PATH") >> $GITHUB_ENV
+          echo $DIR_PATH
+
+      - name: Deploy
+        # if: inputs.tf_function == 'apply' && github.ref == 'refs/heads/main' && inputs.environment_name == 'prod'
+        if: inputs.tf_function == 'apply'
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ env.TERRAFORM_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: ${{ env.tg_dir }} # terragrunt/${{ env.resource_env }}_terragrunt/${{ env.resource_env }}/${{ inputs.environment_name }}/${{ inputs.resource }}
+          tg_command: 'apply'
+    
