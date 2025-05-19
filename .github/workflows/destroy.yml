@@ -80,4 +80,3 @@ jobs:
           tf_version: ${{ env.TERRAFORM_VERSION }}
           tg_version: ${{ env.TERRAGRUNT_VERSION }}
           tg_dir: ${{ env.tg_dir }} # terragrunt/${{ env.resource_env }}_terragrunt/${{ env.resource_env }}/${{ inputs.environment_name }}/${{ inputs.resource }}
-          tg_command: 'destroy'
