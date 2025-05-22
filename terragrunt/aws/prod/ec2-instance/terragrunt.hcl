@@ -41,19 +41,15 @@ EOF
 ########################
 inputs = {
   ami_id                      = "ami-0f58b397bc5c1f2e8"
-  instance_type               = "t3.medium"
+  instance_type               = "t2.micro"
   key_name                    = "account799"
   subnet_id                   = "subnet-0a8f45edcb26833cb"
   instance_name               = "login"
   vpc_id                      = "vpc-08537c3ca047ee074"
   volume_size                 = 10
   allowed_cidr_blocks         = ["0.0.0.0/0"]
-  iam_instance_profile        = dependency.iam_role.outputs.instance_profile_name
   # Tags
   tags                        = local.tags
-}
-dependency "iam_role" {
-  config_path = "../ssm-iam-role"
 }
 
 terraform {

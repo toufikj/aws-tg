@@ -1,3 +1,41 @@
+resource "aws_iam_role" "ec2_role" {
+  name = "${var.instance_name}-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_attach_ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "${var.instance_name}-profile"
+  role = aws_iam_role.ec2_role.name
+}
+resource "aws_iam_role_policy_attachment" "ec2_attach_cloudwatch" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+resource "aws_iam_role_policy_attachment" "ec2_attach_s3" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+
 resource "aws_instance" "ec2" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
@@ -5,7 +43,7 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids      = [aws_security_group.sg.id]
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
-  iam_instance_profile   = var.iam_instance_profile
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
   
   root_block_device {
     volume_size = var.volume_size
