@@ -13,8 +13,6 @@ resource "aws_iam_role" "ec2_role" {
       }
     ]
   })
-
-  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_attach_ssm" {
