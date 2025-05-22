@@ -1,6 +1,4 @@
-variable "iam_instance_profile" {
-  type = string
-}
+
 
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
