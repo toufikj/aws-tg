@@ -48,3 +48,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "s3_bucket_name" {
+  description = "S3 bucket to upload logs"
+  type        = string
+}
