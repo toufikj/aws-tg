@@ -46,7 +46,7 @@ jobs:
               echo "resource_env=unknown" >> $GITHUB_ENV
               ;;
           esac
-          
+
       - name: Checkout code
         uses: actions/checkout@v3
 
