@@ -11,7 +11,7 @@ include "stage" {
 locals {
   # merge tags
   local_tags = {
-    "Name" = "Sentry"
+    "Name" = "login"
   }
 
   tags = merge(include.root.locals.root_tags, include.stage.locals.tags, local.local_tags)
@@ -40,7 +40,7 @@ EOF
 
 ########################
 inputs = {
-  ami_id                      = "ami-0f58b397bc5c1f2e8"
+  ami_id                      = "ami-06b6e5225d1db5f46"
   instance_type               = "t2.micro"
   key_name                    = "account799"
   subnet_id                   = "subnet-094555e147f68ef71"
