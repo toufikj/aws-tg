@@ -50,6 +50,7 @@ inputs = {
   allowed_cidr_blocks         = ["0.0.0.0/0"]
   # Tags
   tags                        = local.tags
+  s3_bucket_name            = "buc-2025-5"
 }
 
 terraform {
