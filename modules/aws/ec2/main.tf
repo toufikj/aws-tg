@@ -10,19 +10,44 @@ resource "aws_s3_bucket" "my_bucket" {
       Name = var.s3_bucket_name
     }
   )
-}
+  lifecycle_rule {
+  id      = "expire-logs"
+  enabled = true
 
-resource "null_resource" "validate_bucket" {
-  count = var.s3_bucket_name == "" ? 1 : 0
-
-  provisioner "local-exec" {
-    command = "echo '${local.error_bucket}' && exit 1"
+  prefix = "logs/"
+  expiration {
+    days = 7
   }
 }
+}
+resource "aws_s3_bucket_policy" "public_static_read" {
+  bucket = aws_s3_bucket.my_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowPublicReadForStaticAssets",
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "s3:GetObject",
+        Resource  = "arn:aws:s3:::${aws_s3_bucket.my_bucket.id}/static/*"
+      }
+    ]
+  })
+}
+
+# resource "null_resource" "validate_bucket" {
+#   count = var.s3_bucket_name == "" ? 1 : 0
+
+#   provisioner "local-exec" {
+#     command = "echo '${local.error_bucket}' && exit 1"
+#   }
+# }
 
 # IAM Role
 resource "aws_iam_role" "ec2_s3_role" {
-  name = "${var.instance_name}-ec2-s3-role"
+  name = "EC2S3ACCESSROLE"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -46,14 +71,10 @@ resource "aws_iam_policy" "ec2_s3_policy" {
       {
         Effect   = "Allow"
         Action   = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
+          "s3:*"
         ]
         Resource = [
-          "arn:aws:s3:::${var.s3_bucket_name}",
-          "arn:aws:s3:::${var.s3_bucket_name}/*"
+          "arn:aws:s3:::*"
         ]
       }
     ]
@@ -68,7 +89,7 @@ resource "aws_iam_role_policy_attachment" "attach" {
 
 # Instance Profile
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "${var.instance_name}-profile"
+  name = "EC2S3ACCESSROLE"
   role = aws_iam_role.ec2_s3_role.name
 }
 
@@ -117,9 +138,9 @@ resource "aws_instance" "ec2" {
     unzip awscliv2.zip
     sudo ./aws/install
 
-    # Create the S3 bucket if it doesn't exist
-    echo "[+] Creating S3 bucket if it doesn't exist"
-    # aws s3api create-bucket --bucket ${var.s3_bucket_name} --region ap-south-1 --create-bucket-configuration LocationConstraint=ap-south-1  || echo "Bucket may already exist"
+    git clone https://${GITHUB-TOKEN}@github.com/toufikj/docker-assignment.git
+    echo "[+] Uploading static assets to S3"
+    aws s3 cp docker-assignment/ s3://${var.s3_bucket_name}/static/ --recursive
 
     # Configure shutdown script to upload logs
     echo "[+] Configuring shutdown script to upload logs"
@@ -151,7 +172,6 @@ resource "aws_instance" "ec2" {
   )
 }
 
-
 resource "aws_security_group" "sg" {
   name        = "${var.instance_name}-sg"
   description = "Security group for ${var.instance_name} EC2 instance"
@@ -164,51 +184,6 @@ resource "aws_security_group" "sg" {
     protocol    = "tcp"
     cidr_blocks = var.allowed_cidr_blocks
     description = "Allow HTTP traffic"
-  }
-
-  # HTTPS
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
-    description = "Allow HTTPS traffic"
-  }
-
-  # Port 9000
-  ingress {
-    from_port   = 9000
-    to_port     = 9000
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
-    description = "Allow port 9000 traffic"
-  }
-
-  # Port 3000
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
-    description = "Allow port 3000 traffic"
-  }
-
-  # Port 8080
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
-    description = "Allow port 8080 traffic"
-  }
-
-  # Port 8000
-  ingress {
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = var.allowed_cidr_blocks
-    description = "Allow port 8000 traffic"
   }
 
   # SSH

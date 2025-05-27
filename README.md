@@ -52,6 +52,9 @@ The `terragrunt/` directory contains Terragrunt configurations for managing envi
 ### Prerequisites
 - Install Terraform and Terragrunt.
 - Configure AWS credentials.
+- **Before running locally:**  
+  Edit the `user_data` section in `modules/aws/ec2/main.tf` and replace `${GITHUB-TOKEN}` with your personal GitHub token for private repository access.
+
 
 ### Steps
 1. Navigate to the desired environment directory (e.g., `terragrunt/aws/prod/ec2-instance/`).
