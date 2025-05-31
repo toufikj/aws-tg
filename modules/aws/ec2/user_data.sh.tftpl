@@ -1,0 +1,60 @@
+#!/bin/bash
+set -e
+
+LOG_FILE="/var/log/user_data.log"
+exec > >(tee -a $LOG_FILE) 2>&1
+
+echo "[+] Starting user_data script"
+
+# Install Java and AWS CLI
+sudo apt-get update -y
+sudo apt-get install -y openjdk-11-jre-headless unzip curl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# # Create S3 bucket if it doesn't exist
+echo "[+] Creating S3 bucket if it doesn't exist"
+aws s3api create-bucket --bucket ${s3_bucket_name} --region ${aws_region} --create-bucket-configuration LocationConstraint=${aws_region} || echo "Bucket may already exist"e and upload static assets
+
+if [ -n "${github_token}" ]; then
+  git clone https://${github_token}@${static_repo_url} ${static_repo_dir}
+else
+  git clone https://${static_repo_url} ${static_repo_dir}
+fi
+aws s3 cp ${static_repo_dir}/ s3://${s3_bucket_name}/static/ --recursive
+
+# Clone and deploy Java app
+if [ -n "${github_token}" ]; then
+  git clone https://${github_token}@${package_repo_url} ${package_repo_dir}
+else
+  git clone https://${package_repo_url} ${package_repo_dir}
+fi
+wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.zip
+unzip apache-tomcat-10.1.41.zip
+mv apache-tomcat-10.1.41 /opt/
+chmod +x /opt/apache-tomcat-10.1.41/bin/*.sh
+sed -i 's/port="8080"/port="80"/' /opt/apache-tomcat-10.1.41/conf/server.xml
+cp ${package_repo_dir}/LoginWebApp.war /opt/apache-tomcat-10.1.41/webapps/
+/opt/apache-tomcat-10.1.41/bin/startup.sh
+
+# Configure shutdown script to upload logs
+echo "[+] Configuring shutdown script to upload logs"
+cat <<-SHUTDOWN > /etc/systemd/system/upload-logs.service
+[Unit]
+Description=Upload logs to S3 on shutdown
+DefaultDependencies=no
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'aws s3 cp /var/log/cloud-init.log s3://${s3_bucket_name}/logs/cloud-init.log && aws s3 cp /var/log/user_data.log s3://${s3_bucket_name}/logs/user_data.log'
+
+[Install]
+WantedBy=shutdown.target
+SHUTDOWN
+
+chmod +x /etc/systemd/system/upload-logs.service
+systemctl enable upload-logs.service
+
+echo "[+] User_data script completed successfully"
