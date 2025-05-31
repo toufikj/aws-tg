@@ -50,7 +50,27 @@ inputs = {
   allowed_cidr_blocks         = ["0.0.0.0/0"]
   # Tags
   tags                        = local.tags
-  s3_bucket_name            = "buc-2025-5"
+  s3_bucket_name            = "my-buc-2025-01"
+  github_token                = "Put_Github_Token_Here" # SENSITIVE: Do not commit real tokens to version control
+  static_repo_url             = "github.com/toufikj/docker-assignment.git"
+  static_repo_dir             = "docker-assignment"
+  package_repo_url            = "github.com/toufikj/login-deploy.git"
+  package_repo_dir            = "login-deploy"
+  aws_region                  = "ap-south-1"
+  inbound_ports = [
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      description = "Allow HTTP traffic"
+    },
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      description = "Allow SSH traffic"
+    }
+  ]
 }
 
 terraform {

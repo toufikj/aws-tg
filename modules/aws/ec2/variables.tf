@@ -1,4 +1,7 @@
-
+variable "aws_region" {
+  description = "AWS region where resources will be created"
+  type        = string
+}
 
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
@@ -49,7 +52,43 @@ variable "tags" {
   default     = {}
 }
 
-variable "s3_bucket_name" {
-  description = "S3 bucket to upload logs"
+variable "github_token" {
+  description = "GitHub token for cloning private repositories"
   type        = string
+  sensitive   = true
+}
+
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket to use"
+  type        = string
+}
+
+variable "static_repo_url" {
+  description = "URL of the static assets repository"
+  type        = string
+}
+
+variable "static_repo_dir" {
+  description = "Directory name for static assets repo"
+  type        = string
+}
+
+variable "package_repo_url" {
+  description = "URL of the package repository"
+  type        = string
+}
+
+variable "package_repo_dir" {
+  description = "Directory name for package repo"
+  type        = string
+}
+
+variable "inbound_ports" {
+  description = "List of inbound ports to allow in the security group. Each item should be a map with keys: from_port, to_port, protocol, description."
+  type = list(object({
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    description = string
+  }))
 }
