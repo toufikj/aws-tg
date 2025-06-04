@@ -8,7 +8,7 @@ echo "[+] Starting user_data script"
 
 # Install Java and AWS CLI
 sudo apt-get update -y
-sudo apt-get install -y openjdk-11-jre-headless unzip curl
+sudo apt-get install unzip openjdk-21-jdk-headless maven -y
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
@@ -32,13 +32,9 @@ if [ -n "${github_token}" ]; then
 else
   git clone https://${project_repo_url} ${project_repo_dir}
 fi
-wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.41/bin/apache-tomcat-10.1.41.zip
-unzip apache-tomcat-10.1.41.zip
-mv apache-tomcat-10.1.41 /opt/
-chmod +x /opt/apache-tomcat-10.1.41/bin/*.sh
-sed -i 's/port="8080"/port="80"/' /opt/apache-tomcat-10.1.41/conf/server.xml
-cp ${project_repo_dir}/LoginWebApp.war /opt/apache-tomcat-10.1.41/webapps/
-/opt/apache-tomcat-10.1.41/bin/startup.sh
+
+cd ${project_repo_dir} && mvn clean install 
+cd /${project_repo_dir}/target && java -jar *.jar 
 
 # Configure shutdown script to upload logs
 echo "[+] Configuring shutdown script to upload logs"

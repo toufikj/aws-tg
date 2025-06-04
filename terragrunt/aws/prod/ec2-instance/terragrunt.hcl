@@ -40,7 +40,7 @@ EOF
 
 ########################
 inputs = {
-  ami_id                      = "ami-06b6e5225d1db5f46"
+  ami_id                      = "ami-0e35ddab05955cf57"
   instance_type               = "t2.micro"
   key_name                    = "account799"
   subnet_id                   = "subnet-094555e147f68ef71"
@@ -50,12 +50,12 @@ inputs = {
   allowed_cidr_blocks         = ["0.0.0.0/0"]
   # Tags
   tags                        = local.tags
-  s3_bucket_name            = "my-buc-2025-01"
-  github_token                = "Put_Github_Token_Here" # SENSITIVE: Do not commit real tokens to version control
+  s3_bucket_name              = "my-buc-2025-01"
+  github_token                = "" # SENSITIVE: Do not commit real tokens to version control
   static_repo_url             = "github.com/toufikj/docker-assignment.git"
   static_repo_dir             = "docker-assignment"
-  project_repo_url            = "github.com/toufikj/login-deploy.git"
-  project_repo_dir            = "login-deploy"
+  project_repo_url            = "github.com/techeazy-consulting/techeazy-devops.git"
+  project_repo_dir            = "techeazy-devops"
   aws_region                  = "ap-south-1"
   inbound_ports = [
     {
