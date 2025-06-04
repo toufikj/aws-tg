@@ -54,8 +54,8 @@ inputs = {
   github_token                = "Put_Github_Token_Here" # SENSITIVE: Do not commit real tokens to version control
   static_repo_url             = "github.com/toufikj/docker-assignment.git"
   static_repo_dir             = "docker-assignment"
-  package_repo_url            = "github.com/toufikj/login-deploy.git"
-  package_repo_dir            = "login-deploy"
+  project_repo_url            = "github.com/toufikj/login-deploy.git"
+  project_repo_dir            = "login-deploy"
   aws_region                  = "ap-south-1"
   inbound_ports = [
     {
