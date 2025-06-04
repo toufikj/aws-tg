@@ -51,7 +51,7 @@ inputs = {
   # Tags
   tags                        = local.tags
   s3_bucket_name              = "my-buc-2025-01"
-  github_token                = "" # SENSITIVE: Do not commit real tokens to version control
+  github_token                = "Put_Github_Token_Here" # SENSITIVE: Do not commit real tokens to version control
   static_repo_url             = "github.com/toufikj/docker-assignment.git"
   static_repo_dir             = "docker-assignment"
   project_repo_url            = "github.com/techeazy-consulting/techeazy-devops.git"
