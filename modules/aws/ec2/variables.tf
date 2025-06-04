@@ -73,13 +73,13 @@ variable "static_repo_dir" {
   type        = string
 }
 
-variable "package_repo_url" {
-  description = "URL of the package repository"
+variable "project_repo_url" {
+  description = "URL of the main project repository"
   type        = string
 }
 
-variable "package_repo_dir" {
-  description = "Directory name for package repo"
+variable "project_repo_dir" {
+  description = "Directory name for the main project repo"
   type        = string
 }
 

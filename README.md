@@ -31,7 +31,7 @@ The `terragrunt/` directory contains Terragrunt configurations for managing envi
 
 ### Inputs and Parameterization
 - All sensitive and environment-specific values are provided via the `inputs` block in the relevant `terragrunt.hcl` file. This includes:
-  - `ami_id`, `instance_type`, `key_name`, `subnet_id`, `instance_name`, `vpc_id`, `volume_size`, `allowed_cidr_blocks`, `tags`, `s3_bucket_name`, `github_token` (sensitive), `static_repo_url`, `static_repo_dir`, `package_repo_url`, `package_repo_dir`, `aws_region`, and `inbound_ports`.
+  - `ami_id`, `instance_type`, `key_name`, `subnet_id`, `instance_name`, `vpc_id`, `volume_size`, `allowed_cidr_blocks`, `tags`, `s3_bucket_name`, `github_token` (sensitive), `static_repo_url`, `static_repo_dir`, `project_repo_url`, `project_repo_dir`, `aws_region`, and `inbound_ports`.
 - **Sensitive values** (such as `github_token`) are marked as sensitive in `variables.tf` and should never be committed to version control.
 - The `inbound_ports` input is a list of objects, each specifying a port range, protocol, and description, allowing dynamic and flexible security group rules.
 
@@ -45,12 +45,13 @@ The `terragrunt/` directory contains Terragrunt configurations for managing envi
    - The `user_data.sh.tftpl` template is rendered with all relevant variables and passed to the EC2 instance.
    - The script performs the following actions:
      - Installs required software (Java, AWS CLI, etc.).
-     - Clones the specified static and package repositories using the provided GitHub token if necessary.
+     - Clones the specified static and project repositories using the provided GitHub token if necessary.
      - Creates the S3 bucket if it does not exist.
      - Uploads static assets to the S3 bucket under the `static/` directory.
      - Deploys a Java web application using Apache Tomcat.
      - Configures a systemd shutdown script to upload logs (`cloud-init.log` and `user_data.log`) to the S3 bucket upon instance shutdown.
    - All actions and errors are logged to `/var/log/user_data.log` for troubleshooting.
+   - **If the repository is private:** The script uses the provided `github_token` to authenticate with GitHub. If the token is not set or is invalid, cloning a private repository will fail. Always provide a valid token for private repositories in the `github_token` input.
 
 ---
 
@@ -79,8 +80,8 @@ The `terragrunt/` directory contains Terragrunt configurations for managing envi
      github_token      = "<YOUR_GITHUB_TOKEN>" # SENSITIVE
      static_repo_url   = "github.com/toufikj/docker-assignment.git"
      static_repo_dir   = "docker-assignment"
-     package_repo_url  = "github.com/toufikj/login-deploy.git"
-     package_repo_dir  = "login-deploy"
+     project_repo_url  = "github.com/toufikj/login-deploy.git"
+     project_repo_dir  = "login-deploy"
      aws_region        = "ap-south-1"
      inbound_ports = [
        {

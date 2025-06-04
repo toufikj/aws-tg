@@ -15,8 +15,8 @@ resource "aws_instance" "ec2" {
     s3_bucket_name    = var.s3_bucket_name
     static_repo_url   = var.static_repo_url
     static_repo_dir   = var.static_repo_dir
-    package_repo_url  = var.package_repo_url
-    package_repo_dir  = var.package_repo_dir
+    project_repo_url  = var.project_repo_url      
+    project_repo_dir  = var.project_repo_dir
     aws_region        = var.aws_region
   }))
   tags = merge(
