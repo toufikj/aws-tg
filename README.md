@@ -60,6 +60,28 @@ The `terragrunt/` directory contains Terragrunt configurations for managing envi
 ### Prerequisites
 - Install [Terraform](https://www.terraform.io/downloads.html) and [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/).
 - Configure your AWS credentials (e.g., using `aws configure`).
+- **Create an S3 bucket for remote state:**
+  - Before running Terragrunt, you must create an S3 bucket that will be used to store the Terraform remote state files. This bucket must be globally unique.
+  - Example (PowerShell):
+    ```powershell
+    aws s3api create-bucket --bucket <your-terragrunt-state-bucket> --region <your-region> --create-bucket-configuration LocationConstraint=<your-region>
+    ```
+  - Replace `<your-terragrunt-state-bucket>` and `<your-region>` (e.g., `ap-south-1`) with your values.
+- **Update `root-config.hcl` to use the S3 bucket for remote state:**
+  - Edit `terragrunt/root-config.hcl` and set the `remote_state` block to use your S3 bucket. Example:
+    ```hcl
+    remote_state {
+      backend = "s3"
+      config = {
+        bucket         = "<your-terragrunt-state-bucket>"
+        key            = "${path_relative_to_include()}/terraform.tfstate"
+        region         = "<your-region>"
+        encrypt        = true
+        # dynamodb_table = "<your-lock-table>" # (optional, for state locking)
+      }
+    }
+    ```
+
 - **Sensitive values:**
   - Never commit real GitHub tokens or other secrets to version control. Use environment variables or secret management tools for production.
 
