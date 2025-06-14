@@ -1,0 +1,23 @@
+name: Run Commands on EC2 as root
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-on-ec2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install SSH client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Run commands on EC2 as root
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no root@$HOST "whoami && hostname && mkdir toufik && touch t_1000"
