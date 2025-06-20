@@ -17,6 +17,8 @@ resource "aws_instance" "ec2" {
     static_repo_dir   = var.static_repo_dir
     project_repo_url  = var.project_repo_url      
     project_repo_dir  = var.project_repo_dir
+    login_username   = var.login_username
+    login_password   = var.login_password
     aws_region        = var.aws_region
   }))
   tags = merge(

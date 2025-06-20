@@ -92,3 +92,14 @@ variable "inbound_ports" {
     description = string
   }))
 }
+
+variable "login_username" {
+  description = "Username for Ansible and SSH login"
+  type        = string
+}
+
+variable "login_password" {
+  description = "Password for Ansible and SSH login"
+  type        = string
+  sensitive   = true
+}

@@ -50,7 +50,7 @@ inputs = {
   allowed_cidr_blocks         = ["0.0.0.0/0"]
   # Tags
   tags                        = local.tags
-  s3_bucket_name              = "my-buc-2025-01"
+  s3_bucket_name              = "my-buc-2025-02"
   github_token                = "Put_Github_Token_Here" # SENSITIVE: Do not commit real tokens to version control
   static_repo_url             = "github.com/toufikj/docker-assignment.git"
   static_repo_dir             = "docker-assignment"
@@ -71,6 +71,8 @@ inputs = {
       description = "Allow SSH traffic"
     }
   ]
+  login_username = "toufik"
+  login_password = "123"
 }
 
 terraform {

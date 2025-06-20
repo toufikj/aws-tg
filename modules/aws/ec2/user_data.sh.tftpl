@@ -33,8 +33,6 @@ else
   git clone https://${project_repo_url} ${project_repo_dir}
 fi
 
-cd ${project_repo_dir} && mvn clean install 
-cd /${project_repo_dir}/target && java -jar *.jar 
 
 # Configure shutdown script to upload logs
 echo "[+] Configuring shutdown script to upload logs"
@@ -55,4 +53,36 @@ SHUTDOWN
 chmod +x /etc/systemd/system/upload-logs.service
 systemctl enable upload-logs.service
 
+# Create a new user and set password authentication
+USERNAME="${login_username}"
+PASSWORD="${login_password}"
+useradd -m -s /bin/bash $USERNAME
+# Set password for the user
+echo "$USERNAME:$PASSWORD" | chpasswd
+# Allow password authentication in SSH
+echo "[+] Updating /etc/ssh/sshd_config to allow password authentication and disable publickey-only auth"
+sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sudo sed -i '/^disable_root:/a ssh_pwauth: true' /etc/cloud/cloud.cfg
+sudo cloud-init single --name set-passwords --frequency always
+sudo systemctl restart ssh
+# Give the user passwordless sudo
+usermod -aG sudo $USERNAME
+echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USERNAME
+chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Install Ansible
+sudo apt-get update -y
+sudo apt-get install -y ansible
+
+# Ensure /etc/ansible/hosts exists and add instance's private IP
+sudo touch /etc/ansible/hosts
+sudo chmod 644 /etc/ansible/hosts
+PRIVATE_IP=$(hostname -I | awk '{print $1}')
+echo "$PRIVATE_IP ansible_connection=ssh ansible_user=$USERNAME ansible_ssh_pass=$PASSWORD" | sudo tee -a /etc/ansible/hosts
+
+
+
+cd ${project_repo_dir} && mvn clean install 
+cd /${project_repo_dir}/target && nohup java -jar *.jar & 
 echo "[+] User_data script completed successfully"
