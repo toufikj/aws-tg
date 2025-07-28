@@ -13,6 +13,8 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 sudo ./aws/install
 
+#export PATH=~/node-v18.18.0-linux-x64/bin:$PATH
+
 # Clone and upload static assets
 if [ -n "${github_token}" ]; then
   git clone https://${github_token}@${static_repo_url} ${static_repo_dir}
