@@ -10,19 +10,19 @@ locals {
   }
 }
 
-terraform {
-  after_hook "after_hook_plan" {
-      commands     = ["plan"]
-      execute      = ["sh", "-c", "terraform show -json tfplan.binary | jq > ${get_parent_terragrunt_dir("root")}/plan.json"]
-      # execute      = ["sh", "-c", "terraform show -json tfplan.binary > ${get_parent_terragrunt_dir("root")}/plan.json"]
-  }
-}
+# terraform {
+#   after_hook "after_hook_plan" {
+#       commands     = ["plan"]
+#       execute      = ["sh", "-c", "terraform show -json tfplan.binary | jq > ${get_parent_terragrunt_dir("root")}/plan.json"]
+#       # execute      = ["sh", "-c", "terraform show -json tfplan.binary > ${get_parent_terragrunt_dir("root")}/plan.json"]
+#   }
+# }
 
 
 remote_state {
   backend = "s3"
   config = {
-    bucket         = "aws-terragrunt"
+    bucket         = "aws-terragrunt-2025"
     key            = "${path_relative_to_include()}/terraform.tfstate"
     encrypt        = true
     region         = local.region
