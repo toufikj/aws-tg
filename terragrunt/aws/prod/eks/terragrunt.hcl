@@ -87,5 +87,5 @@ inputs = {
   }
 
 terraform {
-  source = "${get_parent_terragrunt_dir("root")}/../modules/aws/eks-H"
+  source = "${get_parent_terragrunt_dir("root")}/../modules/aws/eks-v2"
 }
