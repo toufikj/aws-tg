@@ -1,51 +1,54 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+  version = "21.10.1"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.cluster_version
+  name    = var.cluster_name
+  kubernetes_version = var.cluster_version
 
   vpc_id                   = var.vpc_id
   subnet_ids               = var.subnet_ids
   control_plane_subnet_ids = var.control_plane_subnet_ids
 
   # Make the API endpoint private
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
-
-  cluster_addons = {
+  endpoint_public_access  = true
+  endpoint_private_access = true
+  zonal_shift_config = {
+    enabled = true
+  }
+  addons = {
     coredns                = {}
-    eks-pod-identity-agent = {}
-    kube-proxy             = {}
-    vpc-cni                = {}
-    aws-ebs-csi-driver     = {}
-  }
-
-  eks_managed_node_group_defaults = {
-    instance_types = var.instance_types
-  }
-
-  eks_managed_node_groups = {
-    example = {
-      ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = [var.node_group_instance_type]
-
-      min_size     = var.node_group_min_size
-      max_size     = var.node_group_max_size
-      desired_size = var.node_group_desired_size
-        #---------Below line added for ebs csi driver permissions on 25 Dec 2025
-      iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"]
-      iam_role_name = "${var.cluster_name}-node-group-role"
-      #-------------------------------------------------------------------------
+    eks-pod-identity-agent = {
+      before_compute = true
     }
+    kube-proxy             = {}
+    vpc-cni                = {
+      before_compute = true
+    }
+    aws-ebs-csi-driver = {
+      service_account_role_arn = aws_iam_role.ebs_csi_driver_role.arn
+    }
+    # aws-ebs-csi-driver = {
+    #   pod_identity_association = [{
+    #     role_arn        = aws_iam_role.ebs_csi_driver_role.arn
+    #     service_account = "ebs-csi-controller-sa"
+    #   }]
+    #   addon_version = "v1.30.0-eksbuild.1"
+    #   resolve_conflicts = "OVERWRITE"
+    # }
   }
 
+  # eks_managed_node_group_defaults = {
+  #   instance_types = var.instance_types
+  # }
+
+  eks_managed_node_groups = var.node_groups
   enable_cluster_creator_admin_permissions = true
+  enable_irsa = true
 
   access_entries = {
     example = {
       kubernetes_groups = []
-      principal_arn     = "arn:aws:iam::376572378342:role/eks-cluster-role"
+      principal_arn     = aws_iam_role.eks_cluster.arn
 
       policy_associations = {
         example = {
@@ -58,12 +61,14 @@ module "eks" {
       }
     }
   }
-
-  # tags = var.tags
+  tags = var.tags
+  # depends_on = [
+  #   aws_iam_role.eks_cluster
+  # ]
 }
 
 resource "aws_iam_role" "eks_cluster" {
-  name = "eks-cluster-role"
+  name = "${var.cluster_name}-cluster-role"
 
   assume_role_policy = data.aws_iam_policy_document.eks_assume_role_policy.json
 
@@ -92,7 +97,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSServicePolicy" {
 }
 
 resource "aws_security_group" "eks_cluster" {
-  name        = "eks-cluster-sg"
+  name        = "${var.cluster_name}-cluster-sg"
   description = "Security group for EKS cluster"
   vpc_id      = var.vpc_id
 
@@ -114,7 +119,7 @@ resource "aws_security_group" "eks_cluster" {
 }
 
 resource "aws_security_group" "eks_node" {
-  name        = "eks-node-sg"
+  name        = "${var.cluster_name}-node-sg"
   description = "Security group for EKS nodes"
   vpc_id      = var.vpc_id
 
@@ -151,19 +156,19 @@ resource "aws_security_group" "eks_node" {
 }
 
 resource "aws_iam_instance_profile" "eks_node" {
-  name = "eks-node-instance-profile"
+  name = "${var.cluster_name}-node-instance-profile"
   role = aws_iam_role.eks_node.name
 
   # tags = var.tags
 }
 
-# resource "aws_iam_role" "eks_node" {
-#   name = "eks-node-role"
+resource "aws_iam_role" "eks_node" {
+  name = "${var.cluster_name}-node-role"
 
-#   assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role_policy.json
 
-#   # tags = var.tags
-# }
+  # tags = var.tags
+}
 
 data "aws_iam_policy_document" "eks_node_assume_role_policy" {
   statement {
@@ -190,9 +195,146 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEC2ContainerRegistryRe
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.eks_node.name
 }
-
 # Additional policies for EBS CSI Driver permissions
 resource "aws_iam_role_policy_attachment" "eks_node_EBS_CSI_Policies" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   role       = aws_iam_role.eks_node.name
 }
+resource "aws_iam_policy" "secrets_access" {
+  name = "eks-secretsmanager-access-${var.cluster_name}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+      ]
+      Resource = "arn:aws:secretsmanager:ap-south-1:*:*"
+    }]
+  })
+}
+
+############################################################################################################
+### AUTOSCALING
+############################################################################################################
+data "aws_iam_policy_document" "cluster_autoscaler_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:cluster-autoscaler"]
+    }
+
+    principals {
+      identifiers = ["${module.eks.oidc_provider_arn}"]
+      type        = "Federated"
+    }
+  }
+}
+
+# IAM Role for Cluster Autoscaler
+resource "aws_iam_role" "cluster_autoscaler_role" {
+  name               = "${var.cluster_name}-cluster-autoscaler"
+  assume_role_policy = data.aws_iam_policy_document.cluster_autoscaler_assume_role_policy.json
+}
+
+# Custom policy for Cluster Autoscaler
+data "aws_iam_policy_document" "cluster_autoscaler_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:DescribeAutoScalingInstances",
+      "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeScalingActivities",
+      "ec2:DescribeImages",
+      "ec2:DescribeInstanceTypes",
+      "ec2:DescribeLaunchTemplateVersions",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DescribeNodegroup"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "autoscaling:SetDesiredCapacity",
+      "autoscaling:TerminateInstanceInAutoScalingGroup"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "cluster_autoscaler_policy" {
+  name   = "${var.cluster_name}-cluster-autoscaler-policy"
+  role   = aws_iam_role.cluster_autoscaler_role.id
+  policy = data.aws_iam_policy_document.cluster_autoscaler_policy.json
+}
+
+
+
+########################################################################################
+#----------This is experiment branch changes for ebs-csi and alb-controller helm deployment
+#############################################################################################
+# Attach the EBS CSI Driver policy
+resource "aws_iam_role_policy_attachment" "ebs_csi_driver_policy" {
+  role       = aws_iam_role.ebs_csi_driver_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+resource "aws_iam_role" "ebs_csi_driver_role" {
+  name = "${var.cluster_name}-ebs-csi-driver"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = module.eks.oidc_provider_arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(module.eks.oidc_provider, "https://", "")}:sub" =
+          "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role" "alb_controller" {
+  name = "${var.cluster_name}-alb-controller"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "alb_controller_policy" {
+  role       = aws_iam_role.alb_controller.name
+  policy_arn = aws_iam_policy.aws_lb_controller.arn
+}
+
+
+resource "aws_eks_pod_identity_association" "alb" {
+  cluster_name    = var.cluster_name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+  role_arn        = aws_iam_role.alb_controller.arn
+}
+
+# helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=stage-eks --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller --set region=ap-south-1 --set v=2
