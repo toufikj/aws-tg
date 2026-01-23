@@ -70,9 +70,13 @@ variable "node_groups" {
     desired_size   = optional(number, 3)
     subnet_ids     = optional(list(string), [])
     tags           = optional(map(string), {})
-    key_name      = optional(string, null)
+    key_name       = optional(string, null)
     iam_role_name  = optional(string, null)
     iam_role_additional_policies = optional(map(string), {})
+    launch_template = optional(object({
+      key_name = optional(string)
+      user_data = optional(string)
+    }), {})
   }))
   default = {}
 }

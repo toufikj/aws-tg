@@ -59,6 +59,28 @@ inputs = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       }
       iam_role_name = "toufik-eks-node-group-1-role"
+      launch_template = {
+        user_data = <<EOF
+#!/bin/bash
+set -o xtrace
+
+KUBELET_CONFIG=/etc/kubernetes/kubelet/kubelet-config.json
+
+# Inject imageGCHighThresholdPercent value unless it has already been set.
+if ! grep -q imageGCHighThresholdPercent $KUBELET_CONFIG;
+then
+echo "$(jq ".imageGCHighThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
+fi
+
+# Inject imageGCLowThresholdPercent value unless it has already been set.
+if ! grep -q imageGCLowThresholdPercent $KUBELET_CONFIG;
+then
+echo "$(jq ".imageGCLowThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
+fi
+
+/etc/eks/bootstrap.sh toufik-eks
+EOF
+      }
       # launch_template_tags  = {
       #   "k8s.io/cluster-autoscaler/enabled" = "true"
       #   "k8s.io/cluster-autoscaler/stage-eks" = "owned"

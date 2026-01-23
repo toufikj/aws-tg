@@ -300,6 +300,24 @@ data "aws_iam_policy_document" "ebs_csi_driver_assume_role_policy" {
   }
 }
 
+data "aws_iam_policy_document" "alb_controller_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+    }
+
+    principals {
+      identifiers = ["${module.eks.oidc_provider_arn}"]
+      type        = "Federated"
+    }
+  }
+}
+
 # Attach the EBS CSI Driver policy
 resource "aws_iam_role_policy_attachment" "ebs_csi_driver_policy" {
   role       = aws_iam_role.ebs_csi_driver_role.name
@@ -315,16 +333,7 @@ resource "aws_iam_role" "ebs_csi_driver_role" {
 resource "aws_iam_role" "alb_controller" {
   name = "${var.cluster_name}-alb-controller"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "pods.eks.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
+  assume_role_policy = data.aws_iam_policy_document.alb_controller_assume_role_policy.json
 }
 
 resource "aws_iam_policy" "aws_lb_controller" {
@@ -444,11 +453,4 @@ resource "aws_iam_role_policy_attachment" "alb_controller_policy" {
 }
 
 
-resource "aws_eks_pod_identity_association" "alb" {
-  cluster_name    = var.cluster_name
-  namespace       = "kube-system"
-  service_account = "aws-load-balancer-controller"
-  role_arn        = aws_iam_role.alb_controller.arn
-}
-
-# helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=stage-eks --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller --set region=ap-south-1 --set v=2
+# helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=toufik-eks --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller --set region=ap-south-1 --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=<alb_controller_role_arn>

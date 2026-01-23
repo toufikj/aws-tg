@@ -37,3 +37,8 @@
 # #   description = "ARN of the managed node group"
 # #   value       = module.eks.managed_node_groups["example"].arn
 # # }
+
+output "alb_controller_role_arn" {
+  description = "ARN of the ALB controller IAM role"
+  value       = aws_iam_role.alb_controller.arn
+}
