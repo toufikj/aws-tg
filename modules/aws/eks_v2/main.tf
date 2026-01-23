@@ -282,6 +282,24 @@ resource "aws_iam_role_policy" "cluster_autoscaler_policy" {
 ########################################################################################
 #----------This is experiment branch changes for ebs-csi and alb-controller helm deployment
 #############################################################################################
+data "aws_iam_policy_document" "ebs_csi_driver_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+    }
+
+    principals {
+      identifiers = ["${module.eks.oidc_provider_arn}"]
+      type        = "Federated"
+    }
+  }
+}
+
 # Attach the EBS CSI Driver policy
 resource "aws_iam_role_policy_attachment" "ebs_csi_driver_policy" {
   role       = aws_iam_role.ebs_csi_driver_role.name
@@ -291,22 +309,7 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_driver_policy" {
 resource "aws_iam_role" "ebs_csi_driver_role" {
   name = "${var.cluster_name}-ebs-csi-driver"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Federated = module.eks.oidc_provider_arn
-      }
-      Action = "sts:AssumeRoleWithWebIdentity"
-      Condition = {
-        StringEquals = {
-          "${replace(module.eks.oidc_provider, "https://", "")}:sub" =
-          "system:serviceaccount:kube-system:ebs-csi-controller-sa"
-        }
-      }
-    }]
-  })
+  assume_role_policy = data.aws_iam_policy_document.ebs_csi_driver_assume_role_policy.json
 }
 
 resource "aws_iam_role" "alb_controller" {
