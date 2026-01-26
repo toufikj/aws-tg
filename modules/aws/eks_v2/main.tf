@@ -370,6 +370,7 @@ resource "aws_iam_policy" "aws_lb_controller" {
           "ec2:DescribeTags",
           "ec2:GetCoipPoolUsage",
           "ec2:DescribeCoipPools",
+          "ec2:DescribeRouteTables",
           "elasticloadbalancing:DescribeLoadBalancers",
           "elasticloadbalancing:DescribeLoadBalancerAttributes",
           "elasticloadbalancing:DescribeListeners",
@@ -452,5 +453,6 @@ resource "aws_iam_role_policy_attachment" "alb_controller_policy" {
   policy_arn = aws_iam_policy.aws_lb_controller.arn
 }
 
-
-# helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=toufik-eks --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller --set region=ap-south-1 --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=<alb_controller_role_arn>
+# helm repo add eks https://aws.github.io/eks-charts
+# helm repo update
+# helm upgrade aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=toufik-eks --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller --set region=ap-south-1 --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::376572378342:role/<alb_controller_role_arn> --set vpcId=vpc-0d1e39bb991fb35c7
