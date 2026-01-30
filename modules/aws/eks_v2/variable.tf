@@ -25,45 +25,94 @@ variable "cluster_version" {
   default     = "1.30"
 }
 
-variable "instance_types" {
-  description = "A list of instance types for the EKS worker nodes"
-  type        = list(string)
-  default     = ["m6i.large", "m5.large", "m5n.large", "m5zn.large"]
-}
+# variable "instance_types" {
+#   description = "A list of instance types for the EKS worker nodes"
+#   type        = list(string)
+#   default     = [""]
+# }
 
-variable "node_group_instance_type" {
-  description = "The instance type for the EKS managed node group"
-  type        = string
-  default     = "m5.xlarge"
-}
+# variable "node_group_instance_type" {
+#   description = "The instance type for the EKS managed node group"
+#   type        = string
+#   default     = "m5.xlarge"
+# }
 
-variable "node_group_min_size" {
-  description = "Minimum size of the node group"
-  type        = number
-  default     = 2
-}
+# variable "node_group_min_size" {
+#   description = "Minimum size of the node group"
+#   type        = number
+#   default     = 2
+# }
 
-variable "node_group_max_size" {
-  description = "Maximum size of the node group"
-  type        = number
-  default     = 4
-}
+# variable "node_group_max_size" {
+#   description = "Maximum size of the node group"
+#   type        = number
+#   default     = 4
+# }
 
-variable "node_group_desired_size" {
-  description = "Desired size of the node group"
-  type        = number
-  default     = 3
-}
+# variable "node_group_desired_size" {
+#   description = "Desired size of the node group"
+#   type        = number
+#   default     = 3
+# }
 
 
 variable "cidr_blocks" {
   type = list(string)
 }
-# variable "tags" {
-#   description = "A map of tags to add to all resources"
-#   type        = map(string)
-#   default     = {
-#     Environment = "dev"
-#     Terraform   = "true"
-#   }
+
+variable "node_groups" {
+  description = "Configuration for EKS managed node groups"
+  type = map(object({
+    ami_type       = optional(string, "AL2023_x86_64_STANDARD")
+    instance_types = optional(list(string), [""])
+    min_size       = optional(number, 3)
+    max_size       = optional(number, 5)
+    desired_size   = optional(number, 3)
+    subnet_ids     = optional(list(string), [])
+    tags           = optional(map(string), {})
+    key_name       = optional(string, null)
+    iam_role_name  = optional(string, null)
+    iam_role_additional_policies = optional(map(string), {})
+    launch_template = optional(object({
+      key_name = optional(string)
+      user_data = optional(string)
+    }), {})
+  }))
+  default = {}
+}
+variable "tags" {
+  description = "A map of tags to add to all resources"
+  type        = map(string)
+  default     = {
+    Environment = "dev"
+    Terraform   = "true"
+  }
+}
+
+
+#-----Cluster-Autoscaling variables----------
+# variable "additional_role_mappings" {
+#   description = "Additional role mappings for aws-auth ConfigMap"
+#   type = list(object({
+#     rolearn  = string
+#     username = string
+#     groups   = list(string)
+#   }))
+#   default = []
+# }
+
+# variable "additional_user_mappings" {
+#   description = "Additional user mappings for aws-auth ConfigMap"
+#   type = list(object({
+#     userarn  = string
+#     username = string
+#     groups   = list(string)
+#   }))
+#   default = []
+# }
+
+# variable "additional_launch_template_tags" {
+#   description = "Additional tags to apply to the launch template"
+#   type = map(string)
+#   default = {}
 # }
