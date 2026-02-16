@@ -61,39 +61,39 @@ variable "cidr_blocks" {
 }
 
 variable "node_groups" {
-  description = <<-EOT
-    Configuration for EKS managed node groups.
+#   description = <<-EOT
+#     Configuration for EKS managed node groups.
     
-    Supports both ON_DEMAND and SPOT capacity types with custom launch templates.
+#     Supports both ON_DEMAND and SPOT capacity types with custom launch templates.
     
-    Example usage:
+#     Example usage:
     
-    node_groups = {
-      on-demand-ng = {
-        ami_type       = "AL2023_x86_64_STANDARD"
-        instance_types = ["t3.medium"]
-        min_size       = 1
-        max_size       = 2
-        desired_size   = 1
-        capacity_type  = "ON_DEMAND"
-        launch_template = {
-          user_data = base64encode("#!/bin/bash\necho 'custom setup'")
-        }
-      }
-      spot-ng = {
-        ami_type       = "AL2023_x86_64_STANDARD"
-        instance_types = ["t3.medium", "t3a.medium", "m5.large"]
-        min_size       = 1
-        max_size       = 5
-        desired_size   = 2
-        capacity_type  = "SPOT"
-        spot_max_price = null  # or set specific price like "0.05"
-        launch_template = {
-          user_data = base64encode("#!/bin/bash\necho 'spot setup'")
-        }
-      }
-    }
-  EOT
+#     node_groups = {
+#       on-demand-ng = {
+#         ami_type       = "AL2023_x86_64_STANDARD"
+#         instance_types = ["t3.medium"]
+#         min_size       = 1
+#         max_size       = 2
+#         desired_size   = 1
+#         capacity_type  = "ON_DEMAND"
+#         launch_template = {
+#           user_data = base64encode("#!/bin/bash\necho 'custom setup'")
+#         }
+#       }
+#       spot-ng = {
+#         ami_type       = "AL2023_x86_64_STANDARD"
+#         instance_types = ["t3.medium", "t3a.medium", "m5.large"]
+#         min_size       = 1
+#         max_size       = 5
+#         desired_size   = 2
+#         capacity_type  = "SPOT"
+#         spot_max_price = null  # or set specific price like "0.05"
+#         launch_template = {
+#           user_data = base64encode("#!/bin/bash\necho 'spot setup'")
+#         }
+#       }
+#     }
+#   EOT
   type = map(object({
     ami_type       = optional(string, "AL2023_x86_64_STANDARD")
     instance_types = optional(list(string), [""])
