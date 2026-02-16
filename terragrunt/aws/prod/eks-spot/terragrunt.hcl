@@ -47,51 +47,51 @@ inputs = {
 
   node_groups = {
     # On-Demand node group with custom launch template
-    stage-eks-ng-1 = {
-      ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["t3.medium"]
-      min_size       = 1
-      max_size       = 2
-      desired_size   = 1
-      capacity_type  = "ON_DEMAND"  # On-demand capacity
-      key_name = "account78"
-      subnet_ids     = ["subnet-0d705b32c047fcc2d", "subnet-074bfdddbd0a97c59", "subnet-0c36554e3f44b70e6" ]
-      iam_role_additional_policies = {
-        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      }
-      iam_role_name = "toufik-eks-node-group-1-role"
-      launch_template = {
-        user_data = <<EOF
-#!/bin/bash
-set -o xtrace
+#     stage-eks-ng-1 = {
+#       ami_type       = "AL2023_x86_64_STANDARD"
+#       instance_types = ["t3.medium"]
+#       min_size       = 1
+#       max_size       = 2
+#       desired_size   = 1
+#       capacity_type  = "ON_DEMAND"  # On-demand capacity
+#       key_name = "account78"
+#       subnet_ids     = ["subnet-0d705b32c047fcc2d", "subnet-074bfdddbd0a97c59", "subnet-0c36554e3f44b70e6" ]
+#       iam_role_additional_policies = {
+#         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+#       }
+#       iam_role_name = "toufik-eks-node-group-1-role"
+#       launch_template = {
+#         user_data = <<EOF
+# #!/bin/bash
+# set -o xtrace
 
-KUBELET_CONFIG=/etc/kubernetes/kubelet/kubelet-config.json
+# KUBELET_CONFIG=/etc/kubernetes/kubelet/kubelet-config.json
 
-# Inject imageGCHighThresholdPercent value unless it has already been set.
-if ! grep -q imageGCHighThresholdPercent $KUBELET_CONFIG;
-then
-echo "$(jq ".imageGCHighThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
-fi
+# # Inject imageGCHighThresholdPercent value unless it has already been set.
+# if ! grep -q imageGCHighThresholdPercent $KUBELET_CONFIG;
+# then
+# echo "$(jq ".imageGCHighThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
+# fi
 
-# Inject imageGCLowThresholdPercent value unless it has already been set.
-if ! grep -q imageGCLowThresholdPercent $KUBELET_CONFIG;
-then
-echo "$(jq ".imageGCLowThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
-fi
+# # Inject imageGCLowThresholdPercent value unless it has already been set.
+# if ! grep -q imageGCLowThresholdPercent $KUBELET_CONFIG;
+# then
+# echo "$(jq ".imageGCLowThresholdPercent=60" $KUBELET_CONFIG)" > $KUBELET_CONFIG
+# fi
 
-/etc/eks/bootstrap.sh toufik-eks
-EOF
-      }
-      tags = {
-        "NodeGroup" = "on-demand"
-      }
-    }
+# /etc/eks/bootstrap.sh toufik-eks
+# EOF
+#       }
+#       tags = {
+#         "NodeGroup" = "on-demand"
+#       }
+#     }
 
     # Spot instance node group with different launch template
     stage-eks-spot-1 = {
       ami_type       = "AL2023_x86_64_STANDARD"
       instance_types = ["t3.medium", "t3a.medium", "m5.large"]  # Multiple instance types for spot flexibility
-      min_size       = 1
+      min_size       = 2
       max_size       = 3
       desired_size   = 2
       capacity_type  = "SPOT"  # Spot instances
