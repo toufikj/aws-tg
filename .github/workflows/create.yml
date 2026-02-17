@@ -17,6 +17,7 @@ on:
         type: choice
         description: "Select the resources name"
         options:
+          - eks-spot
           - vpc
           - ecr
           - ecs-metabase
